@@ -1,0 +1,2 @@
+C:/Users/DANIEL CRUZ HDEZ/StudioProjects/ag4_dma_eq1/android/app/.cxx/RelWithDebInfo/252r5635/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/DANIEL CRUZ HDEZ/StudioProjects/ag4_dma_eq1/android/app/.cxx/RelWithDebInfo/252r5635/x86_64/CMakeFiles/rebuild_cache.dir
