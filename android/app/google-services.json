@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "153930864866",
+    "project_id": "pushservice-658b2",
+    "storage_bucket": "pushservice-658b2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:153930864866:android:689b7b6b50d6d055f0e6bb",
+        "android_client_info": {
+          "package_name": "com.example.ag4_dma"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAI1AaTI95s2pau8ii3z5LLEUmOjKe1CYc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
