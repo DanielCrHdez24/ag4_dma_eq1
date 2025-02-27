@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:toast/toast.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // Importación corregida
 import 'HomeScreen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -51,13 +51,24 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => HomeScreen()));
       } catch (e) {
-        ToastContext().init(context); // Necesario para usar Toast en versiones recientes
-        Toast.show("Error: $e", duration: Toast.lengthLong, gravity: Toast.center);
+        Fluttertoast.showToast(
+          msg: "Error: $e",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER,
+          backgroundColor: Colors.black87,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
       }
     } else {
-      ToastContext().init(context);
-      Toast.show("Provide email and password",
-          duration: Toast.lengthShort, gravity: Toast.center);
+      Fluttertoast.showToast(
+        msg: "Provide email and password",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        backgroundColor: Colors.black87,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
     }
   }
 
