@@ -6,6 +6,8 @@ import 'package:toast/toast.dart';
 import 'HomeScreen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -77,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: passwordController,
                     decoration: InputDecoration(labelText: "Password"),
                     obscureText: true)),
-            MaterialButton(color: Colors.green, child: Text("Login"), onPressed: _login),
+            MaterialButton(color: Colors.green, onPressed: _login, child: Text("Login")),
           ],
         ),
       ),
