@@ -1,0 +1,2 @@
+C:/Users/DANIEL CRUZ HDEZ/StudioProjects/ag4_dma_eq1/android/app/.cxx/RelWithDebInfo/5r5f146i/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/DANIEL CRUZ HDEZ/StudioProjects/ag4_dma_eq1/android/app/.cxx/RelWithDebInfo/5r5f146i/armeabi-v7a/CMakeFiles/rebuild_cache.dir
