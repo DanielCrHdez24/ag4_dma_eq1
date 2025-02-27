@@ -1,10 +1,9 @@
 plugins {
-    id "com.android.application"
-    id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
-    id "dev.flutter.flutter-gradle-plugin"
-
-
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("dev.flutter.flutter-gradle-plugin")
+    // Agrega el plugin de Google Services aquí
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -18,14 +17,11 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "1.8" // Usar string para la versión de jvm
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.ag4_dma"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -36,11 +32,41 @@ android {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            // Para usar la configuración de debug, debes crearla en el bloque signingConfigs
+            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true // Habilitar la minificación de código en release
+            proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+            )
+        }
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+    signingConfigs {
+        create("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Importa la BoM de Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
+
+    // Agrega las dependencias de los productos de Firebase que quieras usar
+    // Cuando usas la BoM, no especifiques versiones en las dependencias de Firebase
+    implementation("com.google.firebase:firebase-analytics-ktx")
+
+    // Si quieres usar otros servicios, como Firestore, agrega sus dependencias aquí:
+    // implementation("com.google.firebase:firebase-firestore-ktx")
+    // ... otras dependencias ...
 }
