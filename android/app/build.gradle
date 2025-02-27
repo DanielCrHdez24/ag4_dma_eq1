@@ -7,9 +7,8 @@ plugins {
 
 android {
     namespace = "com.example.ag4_dma"
-    compileSdk = 34 // Asegúrate de usar una versión estable (ejemplo: 34)
-
-    ndkVersion = "25.1.8937393" // Puedes ajustar la versión si es necesario
+    compileSdk = 34
+    ndkVersion = "25.1.8937393"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -52,5 +51,8 @@ android {
 
 dependencies {
     implementation platform("com.google.firebase:firebase-bom:33.9.0")
+    implementation 'com.google.firebase:firebase-messaging:23.1.0'
     implementation "com.google.firebase:firebase-analytics-ktx"
 }
+
+apply plugin: 'com.google.gms.google-services'
