@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.ag4_dma"
-        minSdk = flutter.minSdkVersion
+        minSdk = flutter.minSdkVersion 19
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -59,14 +59,7 @@ flutter {
 }
 
 dependencies {
-    // Importa la BoM de Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
 
-    // Agrega las dependencias de los productos de Firebase que quieras usar
-    // Cuando usas la BoM, no especifiques versiones en las dependencias de Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
     implementation("com.google.firebase:firebase-analytics-ktx")
 
-    // Si quieres usar otros servicios, como Firestore, agrega sus dependencias aquí:
-    // implementation("com.google.firebase:firebase-firestore-ktx")
-    // ... otras dependencias ...
-}
