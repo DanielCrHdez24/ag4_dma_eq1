@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'LoginScreen.dart';
 import 'MessageScreen.dart';
@@ -14,60 +13,81 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final FirebaseFirestore db = FirebaseFirestore.instance;
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   User? currentUser;
-  List<DocumentSnapshot> users = [];
 
   @override
   void initState() {
     super.initState();
-    _getUsers();
-  }
-
-  void _getUsers() async {
     currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return;
-
-    QuerySnapshot snapshot = await db.collection("users").get();
-    setState(() {
-      users = snapshot.docs.where((doc) => doc.id != currentUser!.uid).toList();
-    });
   }
 
   void _logout() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => LoginScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Home", style: TextStyle(color: Colors.black)),
+        title: const Text("Usuarios", style: TextStyle(color: Colors.black)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(icon: Icon(Icons.exit_to_app, color: Colors.black), onPressed: _logout),
+          IconButton(
+            icon: const Icon(Icons.exit_to_app, color: Colors.black),
+            onPressed: _logout,
+          ),
         ],
       ),
-      body: users.isNotEmpty
-          ? ListView.builder(
-        itemCount: users.length,
-        itemBuilder: (ctx, index) {
-          return ListTile(
-            leading: CircleAvatar(child: Text(users[index]["email"][0])),
-            title: Text(users[index]["email"]),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MessageScreen(doc: users[index])),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: db.collection("users").snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text("Error al cargar usuarios"));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(child: Text("No hay usuarios registrados"));
+          }
+
+          List<DocumentSnapshot> users = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: users.length,
+            itemBuilder: (ctx, index) {
+              String email = users[index]["email"];
+              bool isCurrentUser = users[index].id == currentUser?.uid;
+
+              return ListTile(
+                leading: CircleAvatar(
+                  child: Text(email[0].toUpperCase()),
+                ),
+                title: Text(email,
+                    style: TextStyle(
+                        fontWeight:
+                        isCurrentUser ? FontWeight.bold : FontWeight.normal,
+                        color: isCurrentUser ? Colors.blue : Colors.black)),
+                subtitle: isCurrentUser ? Text("Tú") : null,
+                onTap: isCurrentUser
+                    ? null
+                    : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            MessageScreen(doc: users[index])),
+                  );
+                },
               );
             },
           );
         },
-      )
-          : Center(child: CircularProgressIndicator()),
+      ),
     );
   }
 }
