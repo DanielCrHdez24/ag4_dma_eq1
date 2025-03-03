@@ -17,7 +17,6 @@ class FirebaseApi {
     // Obtener el token FCM
     final fCMToken = await _firebaseMessaging.getToken();
     print('Token: $fCMToken');
-
     // Establecer el manejador de mensajes en segundo plano
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
   }
