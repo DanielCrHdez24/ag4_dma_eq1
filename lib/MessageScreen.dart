@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class MessageScreen extends StatefulWidget {
@@ -15,8 +14,6 @@ class MessageScreen extends StatefulWidget {
 class _MessageScreenState extends State<MessageScreen> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore db = FirebaseFirestore.instance;
-  final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-
   User? user;
   TextEditingController controller = TextEditingController();
 
@@ -24,88 +21,122 @@ class _MessageScreenState extends State<MessageScreen> {
   void initState() {
     super.initState();
     _getUser();
-    // Solicitar permisos para recibir notificaciones
-    firebaseMessaging.requestPermission();
   }
 
-  void _getUser() {
+  void _getUser() async {
     user = auth.currentUser;
+    setState(() {});
   }
 
-  // Función para enviar el mensaje
-  void _messageHandler(String message) async {
-    if (message.isEmpty) return;
+  void _messageHandler(String message) {
+    if (message.isEmpty) {
+      // Si el mensaje está vacío, mostramos un error en el Snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("El mensaje no puede estar vacío."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
-    print("Enviando mensaje: $message"); // Esto es solo para depurar
-
-    try {
-      // Guarda la notificación en Firestore
-      await db.collection("users").doc(widget.doc.id).collection("notifications").add({
-        "message": message,
-        "title": user?.email ?? "Desconocido",
-        "date": FieldValue.serverTimestamp(),
-      });
-
-      // Llama a la función para enviar la notificación push
-      await _sendPushNotification(message);
-      print("Mensaje enviado y notificación push realizada"); // Depuración
-
+    db.collection("users").doc(widget.doc.id).collection("notifications").add({
+      "message": message,
+      "title": user!.email,
+      "date": FieldValue.serverTimestamp()
+    }).then((_) {
       controller.clear();
-    } catch (e) {
-      // Si hay un error, muestra un mensaje en pantalla
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error al enviar el mensaje")));
-      print("Error al enviar el mensaje: $e"); // Depuración
-    }
-  }
-
-  // Función para enviar la notificación push
-  Future<void> _sendPushNotification(String message) async {
-    String? token = await firebaseMessaging.getToken();
-
-    if (token != null) {
-      try {
-        // Envía la notificación al backend
-        final response = await FirebaseFirestore.instance.collection("notifications").add({
-          "message": message,
-          "token": token, // El token del dispositivo de destino
-          "title": "Notificación desde Flutter",
-        });
-
-        print("Notificación enviada con éxito: $response");
-      } catch (e) {
-        print("Error al enviar la notificación push: $e");
-      }
-    }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Mensaje enviado con éxito."),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Hubo un error al enviar el mensaje."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.doc["email"], style: TextStyle(color: Colors.white))),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
+      appBar: AppBar(
+        title: Text(widget.doc["email"], style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+        backgroundColor: Colors.deepPurple, // AppBar morado
+        elevation: 4,
+      ),
+      body: Container(
+        padding: EdgeInsets.all(20),
+        color: Colors.white, // Fondo blanco de la pantalla
         child: Column(
           children: [
-            // Campo de texto para ingresar el mensaje y el botón de enviar
+            // Área para mostrar los mensajes
+            Expanded(
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey[50], // Fondo gris claro
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.deepPurple), // Borde morado
+                ),
+                child: ListView(
+                  children: [
+                    // Aquí se pueden mostrar los mensajes enviados (esto es un ejemplo)
+                    ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.deepPurple,
+                        child: Text(
+                          widget.doc["email"][0].toUpperCase(),
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      title: Text(widget.doc["email"], style: TextStyle(color: Colors.deepPurple)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
+
+            // Campo para escribir mensaje
             Row(
               children: [
-                // Campo de texto
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    decoration: InputDecoration(hintText: "Escribe tu mensaje"),
-                    maxLines: null, // Permite que el TextField se expanda si es necesario
+                Flexible(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 15),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: controller,
+                      style: TextStyle(color: Colors.black),
+                      decoration: InputDecoration(
+                        hintText: "Escribe tu mensaje",
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 15),
+                      ),
+                    ),
                   ),
                 ),
-                SizedBox(width: 10), // Espacio entre el campo de texto y el botón
-                // Botón de enviar
+                SizedBox(width: 10),
                 FloatingActionButton(
-                  onPressed: controller.text.isEmpty
-                      ? null
-                      : () {
-                    _messageHandler(controller.text); // Llama a la función para enviar el mensaje
-                  },
-                  child: Icon(Icons.send),
+                  onPressed: () => _messageHandler(controller.text),
+                  backgroundColor: Colors.deepPurple, // Botón flotante morado
+                  child: Icon(Icons.send, color: Colors.white),
                 ),
               ],
             ),
