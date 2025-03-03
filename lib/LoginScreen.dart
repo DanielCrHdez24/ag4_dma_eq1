@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'HomeScreen.dart';
+import 'homScreem.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,7 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   final TextEditingController mailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  bool isLoading = false;
 
   @override
   void initState() {
@@ -28,10 +27,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _checkUserAuth() async {
     User? user = auth.currentUser;
-    print("Usuario actual: ${user?.email ?? 'No autenticado'}");
-
     if (user != null) {
-      Future.delayed(Duration.zero, () {
+      // Usar addPostFrameCallback para asegurarse de que la navegación ocurra después del ciclo de construcción
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -44,104 +42,151 @@ class _LoginScreenState extends State<LoginScreen> {
     String email = mailController.text.trim();
     String password = passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (email.isNotEmpty && password.isNotEmpty) {
+      // Mostrar el SnackBar indicando que se está procesando el login
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Iniciando sesión..."),
+          duration: Duration(seconds: 2), // Duración del mensaje
+        ),
+      );
+
+      try {
+        UserCredential result = await auth.signInWithEmailAndPassword(
+            email: email, password: password);
+        String? token = await firebaseMessaging.getToken();
+
+        db.collection("users").doc(result.user!.uid).set({
+          "email": result.user!.email,
+          "fcmToken": token,
+        });
+
+        // Usar Future.delayed para evitar la navegación inmediata
+        Future.delayed(Duration(milliseconds: 100), () {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => HomeScreen()));
+        });
+      } catch (e) {
+        Fluttertoast.showToast(
+          msg: "Error: $e",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER,
+          backgroundColor: Colors.black87,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } else {
       Fluttertoast.showToast(
-        msg: "Por favor, ingresa email y contraseña",
+        msg: "Provide email and password",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.CENTER,
         backgroundColor: Colors.black87,
         textColor: Colors.white,
+        fontSize: 16.0,
       );
-      return;
-    }
-
-    setState(() => isLoading = true);
-
-    try {
-      UserCredential result = await auth.signInWithEmailAndPassword(
-          email: email, password: password);
-      String? token = await firebaseMessaging.getToken();
-
-      await db.collection("users").doc(result.user!.uid).set({
-        "email": result.user!.email,
-        "fcmToken": token,
-      }, SetOptions(merge: true));
-
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => HomeScreen()));
-    } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      switch (e.code) {
-        case "user-not-found":
-          errorMessage = "Usuario no encontrado";
-          break;
-        case "wrong-password":
-          errorMessage = "Contraseña incorrecta";
-          break;
-        case "invalid-email":
-          errorMessage = "Correo electrónico no válido";
-          break;
-        default:
-          errorMessage = "Error: ${e.message}";
-      }
-      Fluttertoast.showToast(
-        msg: errorMessage,
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.CENTER,
-        backgroundColor: Colors.black87,
-        textColor: Colors.white,
-      );
-    } finally {
-      setState(() => isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Detectar si el tema es oscuro o claro
-    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
+      backgroundColor: Colors.blueGrey[50], // Fondo más suave
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Campo de texto para ingresar el correo
-              TextField(
-                controller: mailController,
-                decoration: InputDecoration(
-                  labelText: "Email",
-                  labelStyle: TextStyle(
-                    color: isDarkMode ? Colors.yellow : Colors.black, // Amarillo en tema oscuro
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Título de la pantalla
+                Text(
+                  "AG4 - Notificaciones",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepPurple[700],
                   ),
-                  border: OutlineInputBorder(),
                 ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              SizedBox(height: 15),
-              // Campo de texto para la contraseña
-              TextField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  labelText: "Contraseña",
-                  border: OutlineInputBorder(),
+                SizedBox(height: 30),
+
+                // Email input
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 15.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        spreadRadius: 3,
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: mailController,
+                    keyboardType: TextInputType.emailAddress,
+                    style: TextStyle(color: Colors.black), // Color del texto
+                    decoration: InputDecoration(
+                      icon: Icon(Icons.email, color: Colors.deepPurple),
+                      hintText: "Escribe tu email",
+                      border: InputBorder.none,
+                    ),
+                  ),
                 ),
-                obscureText: true,
-              ),
-              SizedBox(height: 20),
-              isLoading
-                  ? CircularProgressIndicator()
-                  : ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  backgroundColor: Colors.green,
+                SizedBox(height: 20),
+
+                // Password input
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 15.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        spreadRadius: 3,
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    style: TextStyle(color: Colors.black), // Color del texto
+                    decoration: InputDecoration(
+                      icon: Icon(Icons.lock, color: Colors.deepPurple),
+                      hintText: "Enter your password",
+                      border: InputBorder.none,
+                    ),
+                  ),
                 ),
-                onPressed: _login,
-                child: Text("Iniciar sesión", style: TextStyle(fontSize: 16)),
-              ),
-            ],
+                SizedBox(height: 30),
+
+                // Login button
+                ElevatedButton(
+                  onPressed: _login,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+                    backgroundColor: Colors.deepPurple, // Usando backgroundColor
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: Text(
+                    "Login",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
