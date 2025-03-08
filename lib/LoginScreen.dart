@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'homScreem.dart';
+import 'Registro.dart'; // Asegúrate de importar la pantalla de registro
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -71,17 +72,17 @@ class _LoginScreenState extends State<LoginScreen> {
           msg: "Error: $e",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.CENTER,
-          backgroundColor: Colors.black87,
+          backgroundColor: Colors.red,
           textColor: Colors.white,
           fontSize: 16.0,
         );
       }
     } else {
       Fluttertoast.showToast(
-        msg: "Provide email and password",
+        msg: "Ingresa correo y contraseña",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.CENTER,
-        backgroundColor: Colors.black87,
+        backgroundColor: Colors.red,
         textColor: Colors.white,
         fontSize: 16.0,
       );
@@ -115,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 15.0),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(25),
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
@@ -142,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 15.0),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(25),
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
@@ -158,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(color: Colors.black), // Color del texto
                     decoration: InputDecoration(
                       icon: Icon(Icons.lock, color: Colors.deepPurple),
-                      hintText: "Enter your password",
+                      hintText: "Escribe tu contraseña",
                       border: InputBorder.none,
                     ),
                   ),
@@ -172,11 +173,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
                     backgroundColor: Colors.deepPurple, // Usando backgroundColor
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(25),
                     ),
                   ),
                   child: Text(
-                    "Login",
+                    "Aceptar",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -185,6 +186,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 SizedBox(height: 20),
+
+                // Botón de registro
+                TextButton(
+                  onPressed: () {
+                    // Navegar a la pantalla de registro
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => RegistroScreen()),
+                    );
+                  },
+                  child: Text(
+                    "¿No tienes cuenta? Regístrate aquí",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.deepPurple[700],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
